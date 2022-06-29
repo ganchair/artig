@@ -1,0 +1,41 @@
+app-id: org.hmmm.artig
+runtime: org.gnome.Platform
+runtime-version: '42'
+sdk: org.gnome.Sdk
+sdk-extensions : [
+  org.freedesktop.Sdk.Extension.rust-stable
+]
+command: tez
+finish-args:
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --share=network
+  - --share=ipc
+  - --device=dri
+build-options : {
+  append-path : "/usr/lib/sdk/rust-stable/bin",
+  env : {
+    "CARGO_HOME" : "/run/build/tez/cargo",
+    "RUST_BACKTRACE" : "1"
+    }
+}
+
+modules:
+  - name : tez
+    buildsystem : simple
+    build-commands : 
+      - cargo --offline fetch --manifest-path Cargo.toml 
+      - cargo --offline build --bin tez --release 
+      - install -D -m 755 ./target/release/tez -t /app/bin/
+    post-install:
+      - install -D org.hmmm.artig.desktop -t /app/share/applications/
+      - install -D data/icons/org.hmmm.artig.png -t /app/share/icons/hicolor/256x256/apps/
+      - install -D data/icons/toron.png -t /app/share/icons/hicolor/256x256/apps/
+      - install -D data/icons/toroff.png -t /app/share/icons/hicolor/256x256/apps/
+    sources:
+      - type: archive
+        url: https://transfer.sh/get/rECmhh/tez.zip
+        sha256: 8e3f342940906c0901b30d2515de67e5585c96a418f2528b06fbef0b726937c0
+      - generated-sources.json
+
