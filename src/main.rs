@@ -9,7 +9,6 @@ const APP_ID: &str = "org.hmmm.artig";
 
 #[tokio::main]
 async fn main() {
-    // Create a new application
     let app = Application::builder().application_id(APP_ID).build();
 
     // Connect to "activate" signal of `app`
@@ -21,6 +20,7 @@ async fn main() {
 
 async fn start_arti() {
     let config = TorClientConfig::default();
+
     let runtime = PreferredRuntime::current();
 
     let tor_client = TorClient::create_bootstrapped(config).await.unwrap();
@@ -37,7 +37,7 @@ fn build_ui(app: &Application) {
         .file("/app/share/icons/hicolor/256x256/apps/toroff.png")
         .pixel_size(288)
         .build();
-    // Create a button with label and margins
+
     let button = gtk::Button::builder()
         .label("Start Arti")
         .margin_top(12)
@@ -46,29 +46,27 @@ fn build_ui(app: &Application) {
         .margin_end(12)
         .build();
 
-    // Combine the content in a box
     let content = Box::new(Orientation::Vertical, 0);
-    // Adwaitas' ApplicationWindow does not include a HeaderBar
+
     content.append(&HeaderBar::new());
     content.append(&image);
     content.append(&label);
     content.append(&button);
-    // Connect to "clicked" signal of `button`
+
     button.connect_clicked(move |button| {
         let main_context = gtk::glib::MainContext::default();
-        main_context.spawn_local(clone!(@weak button => async move {
-            // Deactivate the button until the operation is done
-            //button.set_sensitive(false);
-            start_arti().await;
-            // Activate the button again
 
+        main_context.spawn_local(clone!(@weak button => async move {
+            start_arti().await;
         }));
+
         image.set_from_file(Some("/app/share/icons/hicolor/256x256/apps/toron.png"));
+
         label.set_label("Connected Tor at 127.0.0.1:9051");
+
         button.set_sensitive(false);
     });
 
-    // Create a window
     let window = ApplicationWindow::builder()
         .application(app)
         .title("Arti GUI")
@@ -76,6 +74,5 @@ fn build_ui(app: &Application) {
         .icon_name("org.hmmm.artig")
         .build();
 
-    // Present window
     window.present();
 }
